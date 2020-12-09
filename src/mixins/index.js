@@ -1,7 +1,7 @@
 export const utilsComponent = {
     computed: {
         isMobile() {
-            return this.$vuetify.breakpoint.mobile;
+            return this.$vuetify.breakpoint.xs;
         },
         isLoggedIn() {
             return this.$store.getters['user/isLoggedIn'];

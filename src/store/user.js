@@ -25,6 +25,9 @@ const mutations = {
         state.userEmail = null
         state.userCurrent = null
         state.loggedIn = false
+    },
+    addCurrent(state, userCurrent) {
+        state.userCurrent = userCurrent;
     }
 }
 
@@ -129,6 +132,9 @@ const actions = {
             isError: false
         }
         dispatch('notification/showNotification', successData, { root: true })
+    },
+    updateCurrent({ commit }, { userCurrent }) {
+        commit('addCurrent', userCurrent);
     }
 }
 

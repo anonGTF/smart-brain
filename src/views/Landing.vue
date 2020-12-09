@@ -3,7 +3,7 @@
       <Navbar/>
       <v-row no-gutters class="d-flex align-center maximize-height">
         <v-col cols="12" md="4">
-          <h1 class="my-purple-text text-center text-h3 font-weight-bold">Detech ur Face</h1>
+          <h1 class="my-purple-text text-center text-h3 font-weight-bold">Detect ur Face</h1>
           <p class="my-purple-text text-center text-h5">As easy as upload ur image</p>
           <div class="d-flex justify-center">
             <v-btn rounded large depressed to="/home" class="my-purple text-none text-h5 btn-bold px-6">Let's Go!</v-btn>
