@@ -63,7 +63,7 @@
           <div class="d-flex justify-center align-center fill-height">
             <div style="position: relative;">
               <img v-if="isMobile" ref="output" alt="selected file" width="300">
-              <img v-else ref="output" alt="selected file" width="750">
+              <img v-else ref="output" alt="selected file" width="700">
               <div 
                 v-for="(box, i) in boxes" 
                 :key="i"
@@ -80,7 +80,13 @@
         <!-- end of image output -->
 
         <v-form>
-          <input ref="file" type="file" name="file" id="file" accept="image/png, image/jpg" class="d-none">
+          <input 
+          ref="file" 
+          type="file" 
+          name="file" 
+          id="file" 
+          accept="image/png, image/jpg"
+          class="d-none">
           <hr v-show="isDisabled">
           <p v-show="isDisabled" class="text-muted text-center">or</p>
           <v-text-field
@@ -109,8 +115,7 @@
             <v-btn 
               text
               depressed
-              :disabled="isDisabled"
-              :loading="isLoading"
+              :disabled="isDisabled || isLoading"
               @click="resetForm"
               class="red--text text-none text-h6 btn-bold px-6 ml-2">
               Reset
@@ -133,6 +138,7 @@ import Notification from '@/components/Notification';
 import { utilsComponent } from '@/mixins';
 import { postData, putData } from '@/utils';
 import { URL_API } from '@/constants';
+import * as faceapi from 'face-api.js';
 
 export default {
   name: 'Home',
@@ -159,6 +165,13 @@ export default {
       (!this.link) ? this.resetForm() : this.createImage();
     }
   },
+  async beforeMount(){
+    this.$store.dispatch('process/showProcess');
+    await faceapi.loadFaceRecognitionModel('/models');
+    await faceapi.loadFaceDetectionModel('/models');
+    this.$store.dispatch('process/removeProcess');
+    console.log('loaded');
+  },
   methods:{
     addDropFile(e){
       this.files.push(...Array.from(e.dataTransfer.files))
@@ -172,11 +185,11 @@ export default {
           this.files.push(...Array.from(e.target.files));
           this.createImage();
         }
+        e.target.value = null;
       })
     },
     createImage(){
       const imgOutput = this.$refs['output'];
-      
       if (this.files.length != 0) {
         imgOutput.src = URL.createObjectURL(this.files[0]);
       } else {
@@ -197,7 +210,7 @@ export default {
         if (this.files.length != 0 && this.link != null) {
           throw "You cannot submit file and link at the same time"
         }
-        await this.submit();
+        (this.files.length) ? await this.detectViaFile() : await this.submit();
       } catch (error) {
         const dataError = {
           isShow: true,
@@ -211,23 +224,14 @@ export default {
     },
     async submit(){
       const url = URL_API + '/imageurl';
-      const urlUpdate = URL_API + '/image';
 
       const respon = await postData(url, {
         input: this.link
       });
       if (respon) {
-        const responUpdate = await putData(urlUpdate, {
-          id : this.user.userID 
-        })
-        if (responUpdate) {
-          this.$store.dispatch('user/updateCurrent', {
-            userCurrent: responUpdate
-          });
-        }
+        await this.updateCurrent();
       }
       this.boxes = this.calculateFaceLocation(respon);
-      console.log(this.boxes);
     },
     calculateFaceLocation(data){
        if (data === -1 || Object.keys(data.outputs[0].data).length === 0) { return []; }
@@ -252,6 +256,38 @@ export default {
         }
       });
       return boxes;
+    },
+    async detectViaFile(){
+      const imgOutput = this.$refs['output'];
+      const detections = await faceapi.detectAllFaces(imgOutput);
+      
+      if (detections) {
+        await this.updateCurrent();
+      }
+
+      const width = Number(imgOutput.width);
+      const height = Number(imgOutput.height);
+
+      this.boxes = detections.map(s => {
+        return {
+          leftCol: s.relativeBox.left * width,
+          topRow: s.relativeBox.top * height,
+          rightCol: width - (s.relativeBox.right * width),
+          bottomRow: height - (s.relativeBox.bottom * height)
+        }
+      })
+    },
+    async updateCurrent(){
+      const urlUpdate = URL_API + '/image';
+
+      const responUpdate = await putData(urlUpdate, {
+          id : this.user.userID 
+        })
+        if (responUpdate) {
+          this.$store.dispatch('user/updateCurrent', {
+            userCurrent: responUpdate
+          });
+        }
     }
   }
 }
