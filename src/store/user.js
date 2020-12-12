@@ -55,13 +55,13 @@ const actions = {
                 email: userEmail,
                 password: password
             })
-
+            console.log(respon);
             if (respon) {
                 commit('setUserData', {
                     userID: respon.id,
                     userName: respon.name,
                     userEmail: respon.email,
-                    userCurrent: respon.entries[0]
+                    userCurrent: respon.entry
                 })
                 const successData = {
                     isShow: true,
@@ -79,7 +79,6 @@ const actions = {
                 isError: true
             }
             dispatch('notification/showNotification', errorData, { root: true })
-            console.log(error)
         } finally {
             dispatch('process/removeProcess', null, { root: true })
         }
@@ -99,7 +98,7 @@ const actions = {
                     userID: respon.id,
                     userName: respon.name,
                     userEmail: respon.email,
-                    userCurrent: respon.entries[0]
+                    userCurrent: respon.entry
                 })
                 const successData = {
                     isShow: true,
