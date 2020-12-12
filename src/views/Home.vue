@@ -250,33 +250,15 @@ export default {
       return boxes;
     },
     async detectViaFile(){
-      // const imgOutput = this.$refs['output'];
-      
       const url = URL_API + '/image-upload';
       const formData = new FormData();
       this.files.forEach((file, i) => {
         formData.append(i, file)
       })
       const respon = await postFile(url, formData);
-      console.log(respon);
-      
-      // const detections = await faceapi.detectAllFaces(imgOutput);
-      
-      // if (detections) {
-      //   await this.updateCurrent();
-      // }
-
-      // const width = Number(imgOutput.width);
-      // const height = Number(imgOutput.height);
-
-      // this.boxes = detections.map(s => {
-      //   return {
-      //     leftCol: s.relativeBox.left * width,
-      //     topRow: s.relativeBox.top * height,
-      //     rightCol: width - (s.relativeBox.right * width),
-      //     bottomRow: height - (s.relativeBox.bottom * height)
-      //   }
-      // })
+      this.files = [];
+      this.link = respon[0].secure_url;
+      await this.submit();
     },
     async updateCurrent(){
       const urlUpdate = URL_API + '/image';
@@ -286,7 +268,7 @@ export default {
         })
         if (responUpdate) {
           this.$store.dispatch('user/updateCurrent', {
-            userCurrent: responUpdate
+            userCurrent: responUpdate[0]
           });
         }
     }
