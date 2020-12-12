@@ -61,7 +61,7 @@ const actions = {
                     userID: respon.id,
                     userName: respon.name,
                     userEmail: respon.email,
-                    userCurrent: respon.entries
+                    userCurrent: respon.entries[0]
                 })
                 const successData = {
                     isShow: true,
@@ -94,13 +94,12 @@ const actions = {
                 email: userEmail,
                 password
             })
-            console.log(respon);
             if (respon) {
                 commit('setUserData', {
                     userID: respon.id,
                     userName: respon.name,
                     userEmail: respon.email,
-                    userCurrent: respon.entries
+                    userCurrent: respon.entries[0]
                 })
                 const successData = {
                     isShow: true,
