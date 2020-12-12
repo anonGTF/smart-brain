@@ -136,9 +136,8 @@
 import Navbar from '@/components/Navbar'
 import Notification from '@/components/Notification';
 import { utilsComponent } from '@/mixins';
-import { postData, putData } from '@/utils';
+import { postData, putData, postFile } from '@/utils';
 import { URL_API } from '@/constants';
-import * as faceapi from 'face-api.js';
 
 export default {
   name: 'Home',
@@ -164,13 +163,6 @@ export default {
     link(){
       (!this.link) ? this.resetForm() : this.createImage();
     }
-  },
-  async beforeMount(){
-    this.$store.dispatch('process/showProcess');
-    await faceapi.loadFaceRecognitionModel('/models');
-    await faceapi.loadFaceDetectionModel('/models');
-    this.$store.dispatch('process/removeProcess');
-    console.log('loaded');
   },
   methods:{
     addDropFile(e){
@@ -258,24 +250,33 @@ export default {
       return boxes;
     },
     async detectViaFile(){
-      const imgOutput = this.$refs['output'];
-      const detections = await faceapi.detectAllFaces(imgOutput);
+      // const imgOutput = this.$refs['output'];
       
-      if (detections) {
-        await this.updateCurrent();
-      }
-
-      const width = Number(imgOutput.width);
-      const height = Number(imgOutput.height);
-
-      this.boxes = detections.map(s => {
-        return {
-          leftCol: s.relativeBox.left * width,
-          topRow: s.relativeBox.top * height,
-          rightCol: width - (s.relativeBox.right * width),
-          bottomRow: height - (s.relativeBox.bottom * height)
-        }
+      const url = URL_API + '/image-upload';
+      const formData = new FormData();
+      this.files.forEach((file, i) => {
+        formData.append(i, file)
       })
+      const respon = await postFile(url, formData);
+      console.log(respon);
+      
+      // const detections = await faceapi.detectAllFaces(imgOutput);
+      
+      // if (detections) {
+      //   await this.updateCurrent();
+      // }
+
+      // const width = Number(imgOutput.width);
+      // const height = Number(imgOutput.height);
+
+      // this.boxes = detections.map(s => {
+      //   return {
+      //     leftCol: s.relativeBox.left * width,
+      //     topRow: s.relativeBox.top * height,
+      //     rightCol: width - (s.relativeBox.right * width),
+      //     bottomRow: height - (s.relativeBox.bottom * height)
+      //   }
+      // })
     },
     async updateCurrent(){
       const urlUpdate = URL_API + '/image';
