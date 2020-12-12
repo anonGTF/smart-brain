@@ -11,9 +11,12 @@
                   type="text"
                   class="rounded-lg"
                   required
+                  :autofocus="!isMobile"
+                  :autocomplete="isMobile ? 'off':''"
                   name="name"
                   label="Full name"
                   outlined
+                  @keyup.enter="register"
                  ></v-text-field>
                  <v-text-field
                   v-model="email"
@@ -24,6 +27,7 @@
                   name="email"
                   label="Email"
                   outlined
+                  @keyup.enter="register"
                  ></v-text-field>
                  <v-text-field
                     v-model="password"
@@ -36,6 +40,7 @@
                     label="Password"
                     outlined
                     @click:append="show = !show"
+                    @keyup.enter="register"
                   ></v-text-field>
                   <v-card-actions class="d-flex justify-center">
                     <v-btn rounded :loading="isLoading" large depressed @click="register" class="my-purple text-none text-h6 btn-bold px-6">Register</v-btn>

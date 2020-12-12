@@ -61,7 +61,7 @@ const actions = {
                     userID: respon.id,
                     userName: respon.name,
                     userEmail: respon.email,
-                    userCurrent: respon.entry
+                    userCurrent: respon.entries
                 })
                 const successData = {
                     isShow: true,
@@ -98,7 +98,7 @@ const actions = {
                     userID: respon.id,
                     userName: respon.name,
                     userEmail: respon.email,
-                    userCurrent: respon.entry
+                    userCurrent: respon.entries
                 })
                 const successData = {
                     isShow: true,

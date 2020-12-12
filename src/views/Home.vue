@@ -9,7 +9,7 @@
     @dragover.prevent
     class="d-flex align-center justify-center maximize-height">
       <div>
-        <h1 class="my-purple-text text-center">Hi {{ user.userName }}!</h1>
+        <h1 class="my-purple-text text-center">Hi {{ slicedName }} !</h1>
         <p class="text-muted text-center">your current entries is {{ user.userCurrent }}</p>
         
         <!-- desktop -->
@@ -63,7 +63,7 @@
           <div class="d-flex justify-center align-center fill-height">
             <div style="position: relative;">
               <img v-if="isMobile" ref="output" alt="selected file" width="300">
-              <img v-else ref="output" alt="selected file" width="700">
+              <img v-else ref="output" alt="selected file" height="350">
               <div 
                 v-for="(box, i) in boxes" 
                 :key="i"
@@ -101,6 +101,7 @@
             label="Paste ur image link here"
             outlined
             clearable
+            @keydown.enter.prevent="verify"
           ></v-text-field>
           <div class="d-flex justify-center">
             <v-btn 
@@ -157,6 +158,10 @@ export default {
     },
     isDisabled(){
       return (this.files.length == 0 && !this.link);
+    },
+    slicedName(){
+      let name = this.user.userName;
+      return (name.length > 20) ? name.substr(0, 20) + '...' : name;
     }
   },
   watch:{
@@ -268,7 +273,7 @@ export default {
         })
         if (responUpdate) {
           this.$store.dispatch('user/updateCurrent', {
-            userCurrent: responUpdate[0]
+            userCurrent: responUpdate
           });
         }
     }

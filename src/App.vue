@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-main :class="isMobile ? 'main-mobile' : 'main'">
-      <transition name="fade" mode="out-in">
+      <transition name="slide" mode="out-in">
           <router-view></router-view>
       </transition>
     </v-main>
@@ -18,6 +18,17 @@ export default {
 </script>
 
 <style>
+.slide-enter-active {
+  transition: all .3s ease;
+}
+.slide-leave-active {
+  transition: all .3s ease;
+}
+.slide-enter, .slide-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
 .main{
   width: 100%;
   height: 100%;

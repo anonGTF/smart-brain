@@ -11,9 +11,12 @@
                   type="email"
                   class="rounded-lg"
                   required
+                  :autofocus="!isMobile"
+                  :autocomplete="isMobile ? 'off':''"
                   name="email"
                   label="Email"
                   outlined
+                  @keyup.enter="login"
                  ></v-text-field>
                  <v-text-field
                     v-model="password"
@@ -26,6 +29,7 @@
                     label="Password"
                     outlined
                     @click:append="show = !show"
+                    @keyup.enter="login"
                   ></v-text-field>
                   <v-card-actions class="d-flex justify-center">
                     <v-btn :loading="isLoading" rounded large depressed @click="login" class="my-purple text-none text-h6 btn-bold px-6">Login</v-btn>
