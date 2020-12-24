@@ -6,8 +6,10 @@
     no-gutters 
     v-cloak 
     @drop.prevent="addDropFile" 
-    @dragover.prevent
-    class="d-flex align-center justify-center maximize-height">
+    @dragover.prevent="overlay = true"
+    @dragenter.prevent="overlay = true"
+    @dragleave.prevent="overlay = false"
+    class="d-flex align-center justify-center">
       <div>
         <h1 class="my-purple-text text-center">Hi {{ slicedName }} !</h1>
         <p class="text-muted text-center">your current entries is {{ user.userCurrent }}</p>
@@ -24,13 +26,9 @@
           class="my-grey rounded-xl my-5 dnd-sheet"
           @click="uploadFile"
           style="cursor:pointer;">
-          <div class="d-flex fill-height justify-center align-center">
-            <div>
-              <div class="d-flex justify-center">
-                <v-icon style="font-size:5em;" class="my-purple-text pb-2">mdi-folder</v-icon>
-              </div>
-              <p class="text-center grey--text font-weight-black">Drag'n drop or Click to upload ur image file</p>
-            </div>
+          <div class="d-flex fill-height justify-center align-center flex-column">
+            <v-icon style="font-size:5em;" class="my-purple-text pb-2">mdi-folder</v-icon>
+            <p class="text-center grey--text font-weight-black">Drag'n drop or Click to upload ur image file</p>
           </div>
         </v-sheet>
 
@@ -46,24 +44,53 @@
           class="my-grey rounded-xl my-5 dnd-sheet"
           @click="uploadFile"
           style="cursor:pointer;">
-          <div class="d-flex fill-height justify-center align-center">
-            <div>
-              <div class="d-flex justify-center">
-                <v-icon x-large class="my-purple-text pb-2">mdi-folder</v-icon>
-              </div>
-              <p class="text-center grey--text font-weight-black">Click to upload ur image file</p>
-            </div>
+          <div class="d-flex fill-height justify-center align-center flex-column">
+            <v-icon x-large class="my-purple-text pb-2">mdi-folder</v-icon>
+            <p class="text-center grey--text font-weight-black">Click to upload ur image file</p>
           </div>
         </v-sheet>
-
         <!-- end of mobile -->
 
+        <!-- overlay -->
+        <v-fade-transition>
+          <v-overlay
+            v-if="overlay"
+            absolute
+            color="#000"
+            opacity=".75"
+          >
+            <div class="d-flex justify-center flex-column">
+              <img src="upload.svg" alt="upload icon">
+              <p class="my-grey-text">Drop like a hot potato</p>
+            </div>
+          </v-overlay>
+        </v-fade-transition>
+        <!-- end of overlay -->
+
+        <!-- loading detection -->
+        <div class="mb-3 my-n10" v-show="!isDisabled && !isFinished">
+          <iframe height="350" frameborder="0" title="loading" src="loading.svg"></iframe>
+        </div>
+
+        <!-- end of loading detection -->
+
         <!-- image output -->
-        <v-card ref="output-wrapper" class="mb-3" v-show="!isDisabled">
+        <v-card class="mb-3" v-show="!isDisabled && isFinished">
           <div class="d-flex justify-center align-center fill-height">
             <div style="position: relative;">
-              <img v-if="isMobile" ref="output" alt="selected file" width="300">
-              <img v-else ref="output" alt="selected file" height="350">
+              <img 
+                v-if="isMobile" 
+                ref="output" 
+                alt="selected file" 
+                width="300" 
+                max-height="350"
+                @load="setImageSize">
+              <img 
+                v-else 
+                ref="output" 
+                alt="selected file" 
+                height="350"
+                @load="setImageSize">
               <div 
                 v-for="(box, i) in boxes" 
                 :key="i"
@@ -118,7 +145,7 @@
               depressed
               :disabled="isDisabled || isLoading"
               @click="resetForm"
-              class="red--text text-none text-h6 btn-bold px-6 ml-2">
+              class="red--text text-none text-h6 btn-bold px-6 ml-2 mb-10">
               Reset
             </v-btn>
           </div>
@@ -137,7 +164,7 @@
 import Navbar from '@/components/Navbar'
 import Notification from '@/components/Notification';
 import { utilsComponent } from '@/mixins';
-import { postData, putData, postFile } from '@/utils';
+import { postData, putData, postFile, compressFile } from '@/utils';
 import { URL_API } from '@/constants';
 
 export default {
@@ -150,7 +177,11 @@ export default {
   data: () => ({
     link: null,
     files: [],
-    boxes: [{}]
+    boxes: [{}],
+    overlay: false,
+    isFinished: true,
+    imgWidth: 0,
+    imgHeight: 0
   }),
   computed:{
     user(){
@@ -171,6 +202,7 @@ export default {
   },
   methods:{
     addDropFile(e){
+      this.overlay = false;
       this.files.push(...Array.from(e.dataTransfer.files))
       this.createImage();
     },
@@ -193,12 +225,21 @@ export default {
         imgOutput.src = this.link;
       }
     },
+    setImageSize(e){
+      if (this.imgWidth != 0 && this.imgHeight != 0) return;
+
+      this.imgWidth = e.target.width;
+      this.imgHeight = e.target.height;
+    },
     resetForm(){
+      this.imgWidth = 0;
+      this.imgHeight = 0;
       this.link = null;
       this.files = [];
       this.boxes = [];
     },
     async verify(){
+      this.isFinished = false;
       this.$store.dispatch('process/showProcess');
       try {
         if (this.files.length == 0 && this.link == null) {
@@ -216,6 +257,7 @@ export default {
         };
         this.$store.dispatch('notification/showNotification', dataError)
       } finally {
+        this.isFinished = true;
         this.$store.dispatch('process/removeProcess');
       }
     },
@@ -229,6 +271,13 @@ export default {
         await this.updateCurrent();
       }
       this.boxes = this.calculateFaceLocation(respon);
+      const banyakWajah = respon.outputs[0].data.regions.length;
+      const dataSuccess = {
+          isShow: true,
+          isError: false,
+          message: `terdeteksi ${banyakWajah} wajah`
+        };
+        this.$store.dispatch('notification/showNotification', dataSuccess);
     },
     calculateFaceLocation(data){
        if (data === -1 || Object.keys(data.outputs[0].data).length === 0) { return []; }
@@ -240,9 +289,8 @@ export default {
         faces.push(a[i].region_info.bounding_box);
       }
 
-      const image = this.$refs['output'];
-      const width = Number(image.width);
-      const height = Number(image.height);
+      const width = this.imgWidth;
+      const height = this.imgHeight
 
       const boxes = faces.map(s => {
         return {
@@ -256,8 +304,10 @@ export default {
     },
     async detectViaFile(){
       const url = URL_API + '/image-upload';
+
+      const compressedFile = await compressFile(this.files);
       const formData = new FormData();
-      this.files.forEach((file, i) => {
+      compressedFile.forEach((file, i) => {
         formData.append(i, file)
       })
       const respon = await postFile(url, formData);

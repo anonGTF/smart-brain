@@ -1,0 +1,13 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 91px; height: 91px;"><style>
+     .line-upload1 {animation:line-upload1 2s infinite;}
+     @keyframes line-upload1 {
+         0%{transform:translate3d(0, 0px, 0);}
+         50%{transform:translate3d(0, 6px, 0);}
+         100%{transform:translate3d(0, 0px, 0);}
+     }
+     @media (prefers-reduced-motion: reduce) {
+         .line-upload1 {
+             animation: none;
+         }
+     }
+    </style><path class="line-upload1 stroke1" d="M51.2948 71.5L51.2948 16.5M51.2948 16.5L37.2916 30.4407M51.2948 16.5L65 30.4407" stroke="rgba(163,35,109,1)" stroke-width="4.0px" stroke-linecap="round" style="animation-duration: 1.8s;"></path><path class="stroke2" d="M13 52V79C13 84.5228 17.4772 89 23 89H78C83.5228 89 88 84.5228 88 79V52" stroke="rgba(163,35,109,1)" stroke-width="4.0px" style="animation-duration: 1.8s;"></path></svg>

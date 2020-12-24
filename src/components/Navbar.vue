@@ -1,5 +1,5 @@
 <template>
-    <v-app-bar flat fixed color="transparent pt-3">
+    <v-app-bar flat color="transparent pt-3">
         <h1 :class="((isMobile) ? 'text-h5' : 'text-h3') + ' font-weight-bold pl-3 my-purple-text'"><span class="my-pink-text">Face</span> U!</h1>
         <v-spacer></v-spacer>
         <div v-if="!isLoggedIn" :class="isMobile ? 'd-none':''">
