@@ -41,6 +41,9 @@ const actions = {
         setTimeout(() => {
             commit('removeNotification')
         }, 3000)
+    },
+    closeNotification({ commit }) {
+        commit('removeNotification')
     }
 }
 

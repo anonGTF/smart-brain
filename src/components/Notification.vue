@@ -18,7 +18,7 @@
           color="black"
           text
           v-bind="attrs"
-          @click="show = false"
+          @click="close"
         >
           X
         </v-btn>
@@ -42,7 +42,7 @@
           color="white"
           text
           v-bind="attrs"
-          @click="show = false"
+          @click="close"
         >
           close
         </v-btn>
@@ -68,6 +68,11 @@ export default {
             default: false
         }
     },
+    methods:{
+      close(){
+        this.$emit('on-close');
+      }
+    }
 }
 </script>
 

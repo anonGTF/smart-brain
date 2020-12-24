@@ -26,7 +26,7 @@ export async function postData(url, data) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
-    }).then(_ => _.ok ? _.json() : null);
+    }).then(_ => _.json());
 
     return respon;
 }

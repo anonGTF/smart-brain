@@ -55,8 +55,7 @@ const actions = {
                 email: userEmail,
                 password: password
             })
-            console.log(respon);
-            if (respon) {
+            if (respon.id) {
                 commit('setUserData', {
                     userID: respon.id,
                     userName: respon.name,
@@ -70,12 +69,12 @@ const actions = {
                 }
                 await dispatch('notification/showNotification', successData, { root: true })
             } else {
-                throw new Error(respon.message)
+                throw respon;
             }
         } catch (error) {
             const errorData = {
                 isShow: true,
-                message: error.message,
+                message: error,
                 isError: true
             }
             dispatch('notification/showNotification', errorData, { root: true })
@@ -93,7 +92,7 @@ const actions = {
                 email: userEmail,
                 password
             })
-            if (respon) {
+            if (respon.id) {
                 commit('setUserData', {
                     userID: respon.id,
                     userName: respon.name,
@@ -107,12 +106,12 @@ const actions = {
                 }
                 await dispatch('notification/showNotification', successData, { root: true })
             } else {
-                throw new Error(respon.message)
+                throw respon
             }
         } catch (error) {
             const errorData = {
                 isShow: true,
-                message: error.message,
+                message: error,
                 isError: true
             }
             dispatch('notification/showNotification', errorData, { root: true })

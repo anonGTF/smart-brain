@@ -13,165 +13,65 @@
       <div>
         <h1 class="my-purple-text text-center">Hi {{ slicedName }} !</h1>
         <p class="text-muted text-center">your current entries is {{ user.userCurrent }}</p>
-        
-        <!-- desktop -->
-        <v-sheet
-          v-if="!isMobile"
-          v-show="isDisabled"
-          ref="before-upload" 
-          width="500" 
-          height="200" 
-          tabindex="0"
-          title="Click to grap a file from your PC"
-          class="my-grey rounded-xl my-5 dnd-sheet"
-          @click="uploadFile"
-          style="cursor:pointer;">
-          <div class="d-flex fill-height justify-center align-center flex-column">
-            <v-icon style="font-size:5em;" class="my-purple-text pb-2">mdi-folder</v-icon>
-            <p class="text-center grey--text font-weight-black">Drag'n drop or Click to upload ur image file</p>
-          </div>
-        </v-sheet>
 
-        <!-- mobile -->
-        <v-sheet
-          v-else 
-          v-show="isDisabled"
-          ref="before-upload"
-          width="300" 
-          height="200" 
-          tabindex="0"
-          title="Click to grap a file from your device"
-          class="my-grey rounded-xl my-5 dnd-sheet"
-          @click="uploadFile"
-          style="cursor:pointer;">
-          <div class="d-flex fill-height justify-center align-center flex-column">
-            <v-icon x-large class="my-purple-text pb-2">mdi-folder</v-icon>
-            <p class="text-center grey--text font-weight-black">Click to upload ur image file</p>
-          </div>
-        </v-sheet>
-        <!-- end of mobile -->
+        <Sheet
+          :isDisabled="isDisabled"
+          :isMobile="isMobile"
+          @on-upload-file="uploadFile"/>
 
-        <!-- overlay -->
-        <v-fade-transition>
-          <v-overlay
-            v-if="overlay"
-            absolute
-            color="#000"
-            opacity=".75"
-          >
-            <div class="d-flex justify-center flex-column">
-              <img src="upload.svg" alt="upload icon">
-              <p class="my-grey-text">Drop like a hot potato</p>
-            </div>
-          </v-overlay>
-        </v-fade-transition>
-        <!-- end of overlay -->
+        <Overlay :show="overlay"/>
+        <Loading :show="!isDisabled && !isFinished"/>
 
-        <!-- loading detection -->
-        <div class="mb-3 my-n10" v-show="!isDisabled && !isFinished">
-          <iframe height="350" frameborder="0" title="loading" src="loading.svg"></iframe>
-        </div>
+        <ImageOutput 
+          ref="imageOutput"
+          :show="!isDisabled && isFinished"
+          :isMobile="isMobile"
+          :boxes="boxes"
+          @on-image-loaded="setImageSize"/>
 
-        <!-- end of loading detection -->
-
-        <!-- image output -->
-        <v-card class="mb-3" v-show="!isDisabled && isFinished">
-          <div class="d-flex justify-center align-center fill-height">
-            <div style="position: relative;">
-              <img 
-                v-if="isMobile" 
-                ref="output" 
-                alt="selected file" 
-                width="300" 
-                max-height="350"
-                @load="setImageSize">
-              <img 
-                v-else 
-                ref="output" 
-                alt="selected file" 
-                height="350"
-                @load="setImageSize">
-              <div 
-                v-for="(box, i) in boxes" 
-                :key="i"
-                class="bounding-box"
-                :style="{ top: box.topRow + 'px', 
-                          right: box.rightCol + 'px', 
-                          bottom: box.bottomRow + 'px', 
-                          left: box.leftCol + 'px'}"
-                >
-                </div>
-            </div>
-          </div>
-        </v-card>
-        <!-- end of image output -->
-
-        <v-form>
-          <input 
-          ref="file" 
-          type="file" 
-          name="file" 
-          id="file" 
-          accept="image/png, image/jpg"
-          class="d-none">
-          <hr v-show="isDisabled">
-          <p v-show="isDisabled" class="text-muted text-center">or</p>
-          <v-text-field
-            v-model="link"
-            type="text"
-            class="rounded-lg"
-            required
-            dense
-            :disabled="!(this.files.length == 0)"
-            single-line
-            name="link"
-            label="Paste ur image link here"
-            outlined
-            clearable
-            @keydown.enter.prevent="verify"
-          ></v-text-field>
-          <div class="d-flex justify-center">
-            <v-btn 
-              rounded 
-              depressed
-              :disabled="isDisabled"
-              :loading="isLoading"
-              @click="verify"
-              class="my-purple text-none text-h6 btn-bold px-6">
-              Detect!
-            </v-btn>
-            <v-btn 
-              text
-              depressed
-              :disabled="isDisabled || isLoading"
-              @click="resetForm"
-              class="red--text text-none text-h6 btn-bold px-6 ml-2 mb-10">
-              Reset
-            </v-btn>
-          </div>
-        </v-form>
+        <FormDetect 
+          ref="formDetect"
+          :isDisabled="isDisabled"
+          :isLoading="isLoading"
+          :link.sync="link"
+          :files="files"
+          @on-verify="verify"
+          @on-reset-form="resetForm"
+          />
       </div>
     </v-row>
   </v-container>
   <Notification 
       :show="showNotif" 
       :message="notifMessage" 
-      :isError="notifError" />
+      :isError="notifError"
+      @on-close="closeNotification" />
   </div>
 </template>
 
 <script>
-import Navbar from '@/components/Navbar'
-import Notification from '@/components/Notification';
 import { utilsComponent } from '@/mixins';
 import { postData, putData, postFile, compressFile } from '@/utils';
 import { URL_API } from '@/constants';
+
+import Navbar from '@/components/Navbar'
+import Notification from '@/components/Notification';
+import Overlay from '@/components/Overlay';
+import Loading from '@/components/Loading';
+import FormDetect from '@/components/FormDetect';
+import ImageOutput from '@/components/ImageOutput';
+import Sheet from '@/components/Sheet';
 
 export default {
   name: 'Home',
   components: {
     Navbar,
-    Notification
+    Notification,
+    Overlay,
+    Loading,
+    FormDetect,
+    ImageOutput,
+    Sheet
   },
   mixins: [ utilsComponent ],
   data: () => ({
@@ -201,13 +101,16 @@ export default {
     }
   },
   methods:{
+    closeNotification(){
+      this.$store.dispatch('notification/closeNotification');
+    },
     addDropFile(e){
       this.overlay = false;
       this.files.push(...Array.from(e.dataTransfer.files))
       this.createImage();
     },
     uploadFile(){   
-      const uploadFileField = this.$refs['file'];
+      const uploadFileField = this.$refs.formDetect.$refs.file;
       uploadFileField.click();
       uploadFileField.addEventListener('change', (e) => {
         if (e.target.files) {
@@ -218,7 +121,7 @@ export default {
       })
     },
     createImage(){
-      const imgOutput = this.$refs['output'];
+      const imgOutput = this.$refs.imageOutput.$refs.output;
       if (this.files.length != 0) {
         imgOutput.src = URL.createObjectURL(this.files[0]);
       } else {
@@ -248,6 +151,12 @@ export default {
         if (this.files.length != 0 && this.link != null) {
           throw "You cannot submit file and link at the same time"
         }
+        if(this.link && !this.link.match(/\.(jpeg|jpg|png)$/)){
+          throw "Only detect images with jpeg/jpg/png extension!";
+        }
+        if (this.files.length && !this.files[0].type.match(/(jpeg|jpg|png)$/)) {
+          throw "Only detect images with jpeg/jpg/png extension!";
+        }
         (this.files.length) ? await this.detectViaFile() : await this.submit();
       } catch (error) {
         const dataError = {
@@ -263,21 +172,33 @@ export default {
     },
     async submit(){
       const url = URL_API + '/imageurl';
+      try {
+        const respon = await postData(url, {
+          input: this.link
+        });
 
-      const respon = await postData(url, {
-        input: this.link
-      });
-      if (respon) {
+        if (!respon.outputs[0].data.regions) {
+          throw "no face detected!";
+        }
+
         await this.updateCurrent();
-      }
-      this.boxes = this.calculateFaceLocation(respon);
-      const banyakWajah = respon.outputs[0].data.regions.length;
-      const dataSuccess = {
+        
+        this.boxes = this.calculateFaceLocation(respon);
+        const banyakWajah = respon.outputs[0].data.regions.length;
+        const dataSuccess = {
+            isShow: true,
+            isError: false,
+            message: `terdeteksi ${banyakWajah} wajah`
+          };
+          this.$store.dispatch('notification/showNotification', dataSuccess); 
+      } catch (error) {
+        const dataError = {
           isShow: true,
-          isError: false,
-          message: `terdeteksi ${banyakWajah} wajah`
+          isError: true,
+          message: error
         };
-        this.$store.dispatch('notification/showNotification', dataSuccess);
+        this.$store.dispatch('notification/showNotification', dataError)
+      }
     },
     calculateFaceLocation(data){
        if (data === -1 || Object.keys(data.outputs[0].data).length === 0) { return []; }
@@ -330,19 +251,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.dnd-sheet{
-  background-image: url('../assets/border.svg');
-}
-
-.bounding-box{
-	position: absolute;
-	box-shadow: 0 0 0 3px #fe4365 inset;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	cursor: pointer;
-  z-index: 1;
-}
-</style>
