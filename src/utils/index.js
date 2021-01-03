@@ -1,22 +1,18 @@
-import Compress from 'compress.js';
+import imageCompression from 'browser-image-compression';
 
-export async function compressFile(files) {
-    const compress = new Compress();
-    const compressedFile = await compress.compress(files, {
-        size: 1,
-        quality: .75,
-        maxWidth: 1280,
-        maxHeight: 1280,
-        resize: true,
-    }).then((results) => {
-        const img = results[0]
-        const base64str = img.data;
-        const imgExt = img.ext;
-        const blob = Compress.convertBase64ToFile(base64str, imgExt);
-        return new File([blob], img.alt, { type: imgExt });
-    })
-
-    return [compressedFile];
+export async function compressImage(files) {
+    const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1280,
+        useWebWorker: false
+    }
+    try {
+        const blob = await imageCompression(files, options);
+        const compressedFile = new File([blob], blob.name, { type: blob.type });
+        return [compressedFile];
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 export async function postData(url, data) {

@@ -51,7 +51,7 @@
 
 <script>
 import { utilsComponent } from '@/mixins';
-import { postData, putData, postFile, compressFile } from '@/utils';
+import { postData, putData, postFile, compressImage } from '@/utils';
 import { URL_API } from '@/constants';
 
 import Navbar from '@/components/Navbar'
@@ -81,7 +81,7 @@ export default {
     overlay: false,
     isFinished: true,
     imgWidth: 0,
-    imgHeight: 0
+    imgHeight: 0,
   }),
   computed:{
     user(){
@@ -225,8 +225,7 @@ export default {
     },
     async detectViaFile(){
       const url = URL_API + '/image-upload';
-
-      const compressedFile = await compressFile(this.files);
+      const compressedFile = await compressImage(this.files[0]);
       const formData = new FormData();
       compressedFile.forEach((file, i) => {
         formData.append(i, file)
